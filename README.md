@@ -8,7 +8,7 @@ Este plugin está publicado no marketplace `mercado-do-boca`. Para aparecer o ma
 
 ```/plugins marketplace add filipefk/ffk-ia-plugins```
 
-Com o marketplace adicionado, você pode instalar as skills individualmente:
+Com o marketplace adicionado, você pode instalar os plugins individualmente. No momento tem só um plugin com duas skills:
 
 ```/plugin install boca-plugin@mercado-do-boca```
 
