@@ -7,6 +7,7 @@ Experimentos com plugins e skills para o [Claude Code](https://claude.ai/code).
 ### `azure-card`
 
 Cria ou lê work items no Azure DevOps a partir de descrições em linguagem natural. Suporta criação de hierarquias pai/filho (ex.: User Story com Tasks filhas).
+Utiliza scripts PowerShell para interagir com a API do Azure DevOps, então, tem que ter o PowerShell instalado e configurado no ambiente onde o Claude Code está rodando.
 
 Requer as seguintes variáveis de ambiente configuradas:
 
@@ -27,13 +28,14 @@ Crie um card de User Story descrevendo o problema abaixo, analise o código da p
 ### `weather`
 
 Busca a previsão do tempo com base em uma localização informada ou, se não informada, estima a localização a partir do IP público.
+Faz chamadas GET em serviços gratuítos de previsão do tempo, optenção do IP externo e identificação da localização usando o IP obtido. Se estiver usando VPN vai pegar o IP da VPN.
 
 Utiliza a API gratuita [Open-Meteo](https://open-meteo.com/) — sem necessidade de chave de acesso.
 
 **Exemplo de uso:**
 ```
-qual o clima em Porto Alegre?
-qual o tempo aqui?
+Como está o clima?
+Qual a previsão do tempo para Porto Alegre?
 ```
 
 ---
