@@ -50,7 +50,7 @@ Faz chamadas GET em serviços gratuítos de previsão do tempo, optenção do IP
 Utiliza a API gratuita [Open-Meteo](https://open-meteo.com/) — sem necessidade de chave de acesso.
 
 **Exemplo de uso:**
-```
+
 Como está o clima?
+
 Qual a previsão do tempo para Porto Alegre?
-```
