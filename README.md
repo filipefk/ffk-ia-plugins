@@ -47,7 +47,7 @@ Este plugin está publicado no marketplace `mercado-do-boca`. Para aparecer o ma
 
 Com o marketplace adicionado, você pode instalar as skills individualmente:
 
-```/plugin install boca-plugins@mercado-do-boca```
+```/plugin install boca-plugin@mercado-do-boca```
 
 ## Observações
 
