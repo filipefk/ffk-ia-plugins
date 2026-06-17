@@ -2,6 +2,23 @@
 
 Experimentos com plugins e skills para o [Claude Code](https://claude.ai/code).
 
+## Instalação
+
+Este plugin está publicado no marketplace `mercado-do-boca`. Para aparecer o marketplace no Claude Code, execute a linha de comando abaixo dentro do terminal do Claude Code CLI (Não vai funcionar no programa do Claude Code para Windows):
+
+```/plugins marketplace add filipefk/ffk-ia-plugins```
+
+Com o marketplace adicionado, você pode instalar as skills individualmente:
+
+```/plugin install boca-plugin@mercado-do-boca```
+
+## Observações
+
+- Projeto de uso pessoal, sem garantias de suporte ou estabilidade.
+- Contribuições não são esperadas, mas sugestões são bem-vindas.
+
+---
+
 ## Skills disponíveis
 
 ### `azure-card`
@@ -37,20 +54,3 @@ Utiliza a API gratuita [Open-Meteo](https://open-meteo.com/) — sem necessidade
 Como está o clima?
 Qual a previsão do tempo para Porto Alegre?
 ```
-
----
-
-## Instalação
-
-Este plugin está publicado no marketplace `mercado-do-boca`. Para aparecer o marketplace no Claude Code, execute a linha de comando abaixo dentro do terminal do Claude Code CLI (Não vai funcionar no programa do Claude Code para Windows):
-
-```/plugins marketplace add filipefk/ffk-ia-plugins```
-
-Com o marketplace adicionado, você pode instalar as skills individualmente:
-
-```/plugin install boca-plugin@mercado-do-boca```
-
-## Observações
-
-- Projeto de uso pessoal, sem garantias de suporte ou estabilidade.
-- Contribuições não são esperadas, mas sugestões são bem-vindas.
