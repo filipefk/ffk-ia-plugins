@@ -30,12 +30,12 @@ Requer as seguintes variáveis de ambiente configuradas:
 | `AZURE_USER_API_KEY` | Token de API do usuário |
 
 **Exemplo de uso:**
-```
+
 Crie um card de User Story para "Implementar login" com duas tasks filhas: "Criar endpoint de autenticação" e "Desenvolver interface de login". Analise o fonte da pasta local para extrair os detalhes.
 
 Crie um card de User Story descrevendo o problema abaixo, analise o código da pasta local e crie cards filho de bug ou task conforme a análise do problema e do código. A quantidade de cards filho deve ser baseada na possibilidade de distribuir o trabalho para mais de um programador sendo que cada card filho possa ser testado e entregue separadamente sem gerar conflitos. A User Story deve ter a descrição do problema e os cards filhos devem ser mais técnicos, sugerindo possíveis causas e soluções baseadas no código analisado:
 [descrição livre do problema]
-```
+
 
 ---
 
