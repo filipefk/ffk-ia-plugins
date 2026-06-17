@@ -1,6 +1,6 @@
-# ffk-ia-plugins
+# Mercado do Boca - Plugins para Claude Code
 
-Experiências com plugins e skills para o [Claude Code](https://claude.ai/code).
+Experimentos com plugins e skills para o [Claude Code](https://claude.ai/code).
 
 ## Skills disponíveis
 
