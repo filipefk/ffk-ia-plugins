@@ -8,9 +8,19 @@ Este plugin está publicado no marketplace `mercado-do-boca`. Para aparecer o ma
 
 ```/plugins marketplace add filipefk/ffk-ia-plugins```
 
-Com o marketplace adicionado, você pode instalar as skills individualmente:
+Com o marketplace adicionado, você pode instalar os plugins individualmente. No momento tem só um plugin com duas skills.
+Tanto o marketplace quanto os plugins agora vão aparecer na interface do Claude Code para Windows e podem ser gerenciados por lá (instalar, desabilitar, remover...).
+O comando abaixo instala o plugin pelo Claude Code CLI
 
 ```/plugin install boca-plugin@mercado-do-boca```
+
+## Atualização automática
+
+Claude Code pode atualizar automaticamente marketplaces e seus plugins instalados na inicialização.
+Veja no link abaixo as orientações para habilitar e desabilitar a atualização automática via terminal Claude Code CLI (Não encontrei esta opção no programa do Claude Code para Windows).
+
+[Configure atualizações automáticas](https://code.claude.com/docs/pt/discover-plugins#configure-auto-updates)
+
 
 ## Observações
 
