@@ -1,12 +1,14 @@
 ---
 name: trello-card
-description: Cria ou lê um card no Trello a partir de uma descrição em linguagem natural. A API Key, o Token e o ID da lista padrão são obtidos nas variáveis de ambiente TRELLO_API_KEY, TRELLO_TOKEN e TRELLO_LIST_ID.
+description: Cria ou lê um card no Trello a partir de uma descrição em linguagem natural. Requer apenas TRELLO_API_KEY e TRELLO_TOKEN. Board e coluna são resolvidos por nome.
 ---
 
 ## Como usar
 
 ```
 /trello-card <descrição livre da funcionalidade ou bug>
+/trello-card board:"Nome do Board" <descrição>
+/trello-card board:"Nome do Board" coluna:"Nome da Coluna" <descrição>
 /trello-card ler <id>
 ```
 
@@ -15,12 +17,19 @@ description: Cria ou lê um card no Trello a partir de uma descrição em lingua
 - [Regras de criação de cards](references/card-rules.md) — tipo, título, labels, confirmação
 - [Modelos de cards (Markdown)](references/card-models.md) — templates para Story, Bug e Task
 
+## Variáveis de ambiente
+
+| Variável         | Descrição                        |
+|------------------|----------------------------------|
+| `TRELLO_API_KEY` | Chave de API do Trello           |
+| `TRELLO_TOKEN`   | Token de autenticação do Trello  |
+
 ## Instruções de execução
 
 Ao ser invocada, verifique o conteúdo de `$ARGUMENTS` na ordem abaixo (a primeira regra que casar vence):
 
 1. Se começar com `ler` seguido de um ID (ex: `ler abc123`) → **fluxo de leitura**.
-2. Caso contrário → **fluxo de criação simples**.
+2. Caso contrário → **fluxo de criação**.
 
 ---
 
@@ -28,25 +37,15 @@ Ao ser invocada, verifique o conteúdo de `$ARGUMENTS` na ordem abaixo (a primei
 
 ### Passo 1 — Buscar o card via API
 
-Execute o seguinte script PowerShell:
+```bash
+TRELLO_API_KEY="${TRELLO_API_KEY:?Variável TRELLO_API_KEY não encontrada}"
+TRELLO_TOKEN="${TRELLO_TOKEN:?Variável TRELLO_TOKEN não encontrada}"
 
-```powershell
-$apiKey = $env:TRELLO_API_KEY
-if (-not $apiKey) { throw "Variável de ambiente TRELLO_API_KEY não encontrada." }
-
-$token = $env:TRELLO_TOKEN
-if (-not $token) { throw "Variável de ambiente TRELLO_TOKEN não encontrada." }
-
-$cardId = "<id extraído dos argumentos>"
-$url = "https://api.trello.com/1/cards/$cardId`?key=$apiKey&token=$token&fields=name,desc,url,idList,labels,due,dateLastActivity&members=true"
-
-$response = Invoke-RestMethod -Uri $url -Method Get
-$response | ConvertTo-Json -Depth 10
+CARD_ID="<id extraído dos argumentos>"
+curl -s "https://api.trello.com/1/cards/${CARD_ID}?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&fields=name,desc,url,idList,labels,due,dateLastActivity&members=true"
 ```
 
 ### Passo 2 — Exibir os dados do card
-
-Apresente as informações relevantes em formato legível:
 
 ```
 ID:       <id>
@@ -61,76 +60,89 @@ Descrição:
 
 ---
 
-## Fluxo de criação simples
+## Fluxo de criação
 
-### Passo 1 — Interpretar a descrição
+### Passo 1 — Extrair parâmetros dos argumentos
 
-Leia o texto em `$ARGUMENTS` e infira tipo, título e descrição conforme as regras em [card-rules.md](references/card-rules.md) e os modelos em [card-models.md](references/card-models.md).
+Analise `$ARGUMENTS` e extraia, se presentes:
 
-### Passo 2 — Exibir o card para confirmação
+- `board`: valor do parâmetro `board:"..."` ou `board:...` (sem aspas se for uma só palavra)
+- `coluna`: valor do parâmetro `coluna:"..."` ou `coluna:...`
+- O restante do texto (sem os parâmetros acima) é a **descrição do card**
 
-Mostre ao usuário o card montado (formato em [card-rules.md](references/card-rules.md)) e use `AskUserQuestion` com as opções **Criar card** e **Cancelar**.
+Exemplos:
+- `board:"Meu Projeto" bug no login` → board=`Meu Projeto`, descrição=`bug no login`
+- `bug no login` → board não informado, descrição=`bug no login`
+- `board:"Meu Projeto" coluna:"Em andamento" nova feature` → board=`Meu Projeto`, coluna=`Em andamento`, descrição=`nova feature`
+
+### Passo 2 — Resolver o board
+
+**Se o board foi informado:**
+
+```bash
+TRELLO_API_KEY="${TRELLO_API_KEY:?Variável TRELLO_API_KEY não encontrada}"
+TRELLO_TOKEN="${TRELLO_TOKEN:?Variável TRELLO_TOKEN não encontrada}"
+
+curl -s "https://api.trello.com/1/members/me/boards?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&filter=open&fields=id,name"
+```
+
+Busque na resposta o board cujo `name` corresponda ao valor informado (comparação case-insensitive). Se não encontrar, informe o erro e encerre.
+
+**Se o board NÃO foi informado:**
+
+Execute o mesmo curl acima e liste os boards encontrados para o usuário escolher usando `AskUserQuestion`. Monte as opções com os nomes dos boards retornados (máximo 4; se houver mais, liste os 4 primeiros e informe que há outros). Após a escolha, use o `id` do board selecionado.
+
+### Passo 3 — Resolver a coluna
+
+Com o `BOARD_ID` obtido no passo anterior:
+
+```bash
+curl -s "https://api.trello.com/1/boards/${BOARD_ID}/lists?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&filter=open&fields=id,name,pos"
+```
+
+- **Se a coluna foi informada:** encontre na resposta a lista cujo `name` corresponda (case-insensitive). Se não encontrar, informe o erro e encerre.
+- **Se a coluna NÃO foi informada:** use a lista com o menor valor de `pos` (a primeira coluna).
+
+Guarde o `id` da lista encontrada como `LIST_ID`.
+
+### Passo 4 — Interpretar a descrição
+
+Leia o texto da descrição extraída no Passo 1 e infira tipo, título e descrição conforme as regras em [card-rules.md](references/card-rules.md) e os modelos em [card-models.md](references/card-models.md).
+
+### Passo 5 — Exibir o card para confirmação
+
+Mostre ao usuário o card montado (formato em [card-rules.md](references/card-rules.md)), incluindo o nome do board e da coluna onde será criado. Use `AskUserQuestion` com as opções **Criar card** e **Cancelar**.
 
 Se o usuário cancelar, encerre sem fazer nada.
 
-### Passo 3 — Buscar o ID do label via API
+### Passo 6 — Buscar o ID do label via API
 
-Antes de criar o card, obtenha o `idLabel` correto para o tipo inferido buscando os labels do board:
-
-```powershell
-$apiKey = $env:TRELLO_API_KEY
-if (-not $apiKey) { throw "Variável de ambiente TRELLO_API_KEY não encontrada." }
-
-$token = $env:TRELLO_TOKEN
-if (-not $token) { throw "Variável de ambiente TRELLO_TOKEN não encontrada." }
-
-$listId = $env:TRELLO_LIST_ID
-if (-not $listId) { throw "Variável de ambiente TRELLO_LIST_ID não encontrada." }
-
-# Obter o board a partir da lista
-$listUrl = "https://api.trello.com/1/lists/$listId`?key=$apiKey&token=$token&fields=idBoard"
-$list = Invoke-RestMethod -Uri $listUrl -Method Get
-$boardId = $list.idBoard
-
-# Buscar labels do board
-$labelsUrl = "https://api.trello.com/1/boards/$boardId/labels?key=$apiKey&token=$token"
-$labels = Invoke-RestMethod -Uri $labelsUrl -Method Get
-$labels | ConvertTo-Json
+```bash
+curl -s "https://api.trello.com/1/boards/${BOARD_ID}/labels?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}"
 ```
 
-A partir da resposta, identifique o label cujo `name` corresponda ao tipo inferido (Bug, Story ou Task) ou cuja `color` corresponda à cor definida nas regras. Se não encontrar label correspondente, crie o card **sem label**.
+Identifique o label cujo `name` corresponda ao tipo inferido (Bug, Story ou Task) ou cuja `color` corresponda à cor definida nas regras. Se não encontrar label correspondente, crie o card **sem label**.
 
-### Passo 4 — Criar o card via API
+### Passo 7 — Criar o card via API
 
-```powershell
-$apiKey = $env:TRELLO_API_KEY
-if (-not $apiKey) { throw "Variável de ambiente TRELLO_API_KEY não encontrada." }
-
-$token = $env:TRELLO_TOKEN
-if (-not $token) { throw "Variável de ambiente TRELLO_TOKEN não encontrada." }
-
-$listId = $env:TRELLO_LIST_ID
-if (-not $listId) { throw "Variável de ambiente TRELLO_LIST_ID não encontrada." }
-
-$body = @{
-    name   = "<título do card>"
-    desc   = "<descrição em Markdown>"
-    idList = $listId
+```bash
+BODY=$(cat <<EOF
+{
+  "name": "<título do card>",
+  "desc": "<descrição em Markdown>",
+  "idList": "${LIST_ID}"
 }
+EOF
+)
 
-# Adicionar idLabels somente se encontrou o label no Passo 3
-# $body["idLabels"] = @("<idLabel>")
+# Adicionar "idLabels": ["<idLabel>"] ao JSON acima somente se encontrou o label no Passo 6
 
-$url = "https://api.trello.com/1/cards?key=$apiKey&token=$token"
-
-$response = Invoke-RestMethod -Uri $url -Method Post `
-    -ContentType "application/json" `
-    -Body ($body | ConvertTo-Json)
-$response.id
-$response.url
+curl -s -X POST "https://api.trello.com/1/cards?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d "$BODY"
 ```
 
-### Passo 5 — Reportar o resultado
+### Passo 8 — Reportar o resultado
 
-- **Sucesso:** exibir o ID e a URL do card criado (campo `url` da resposta).
-- **Erro:** exibir a mensagem de erro retornada pela API ou pelo PowerShell.
+- **Sucesso:** exibir o nome do board, nome da coluna, ID e URL do card criado (campo `url` da resposta).
+- **Erro:** exibir a mensagem de erro retornada pela API.

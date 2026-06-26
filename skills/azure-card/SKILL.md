@@ -30,22 +30,16 @@ Ao ser invocada, verifique o conteúdo de `$ARGUMENTS` na ordem abaixo (a primei
 
 ### Passo 1 — Buscar o card via API
 
-Execute o seguinte script PowerShell:
+Execute o seguinte script bash:
 
-```powershell
-$token = $env:AZURE_USER_API_KEY
-if (-not $token) { throw "Variável de ambiente AZURE_USER_API_KEY não encontrada." }
+```bash
+AZURE_USER_API_KEY="${AZURE_USER_API_KEY:?Variável AZURE_USER_API_KEY não encontrada}"
+AZURE_URL_BOARD="${AZURE_URL_BOARD:?Variável AZURE_URL_BOARD não encontrada}"
 
-$boardUrl = $env:AZURE_URL_BOARD
-if (-not $boardUrl) { throw "Variável de ambiente AZURE_URL_BOARD não encontrada." }
+ID="<id extraído dos argumentos>"
+URL="${AZURE_URL_BOARD}/_apis/wit/workitems/${ID}?api-version=7.1"
 
-$id = <id extraído dos argumentos>
-$url = "$boardUrl/_apis/wit/workitems/$id`?api-version=7.1"
-
-$response = Invoke-RestMethod -Uri $url -Method Get `
-    -Headers @{ Authorization = "Bearer $token" }
-
-$response | ConvertTo-Json -Depth 10
+curl -s -H "Authorization: Bearer ${AZURE_USER_API_KEY}" "$URL"
 ```
 
 ### Passo 2 — Exibir os dados do card
@@ -97,41 +91,39 @@ Se o usuário cancelar, encerre sem fazer nada.
 
 Para Bug, o campo de conteúdo é `Microsoft.VSTS.TCM.ReproSteps`; para os demais tipos, é `System.Description` (ver [card-rules.md](references/card-rules.md)).
 
-```powershell
-$token = $env:AZURE_USER_API_KEY
-if (-not $token) { throw "Variável de ambiente AZURE_USER_API_KEY não encontrada." }
+```bash
+AZURE_USER_API_KEY="${AZURE_USER_API_KEY:?Variável AZURE_USER_API_KEY não encontrada}"
+AZURE_URL_BOARD="${AZURE_URL_BOARD:?Variável AZURE_URL_BOARD não encontrada}"
 
-$boardUrl = $env:AZURE_URL_BOARD
-if (-not $boardUrl) { throw "Variável de ambiente AZURE_URL_BOARD não encontrada." }
-
-$childType = [Uri]::EscapeDataString("<tipo do filho, ex: Task>")
-$parentId  = <id do card pai existente>
-$url = "$boardUrl/_apis/wit/workitems/`$$childType`?api-version=7.1"
+CHILD_TYPE="<tipo do filho, ex: Task>"
+CHILD_TYPE_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${CHILD_TYPE}'))")
+PARENT_ID="<id do card pai existente>"
+URL="${AZURE_URL_BOARD}/_apis/wit/workitems/\$${CHILD_TYPE_ENCODED}?api-version=7.1"
 
 # Use /fields/Microsoft.VSTS.TCM.ReproSteps para Bug; /fields/System.Description para os demais
-$descriptionPath = "<caminho do campo conforme tipo>"
+DESCRIPTION_PATH="<caminho do campo conforme tipo>"
 
-$body = @(
-    @{ op = "add"; path = "/fields/System.Title"; value = "<título do filho>" }
-    @{ op = "add"; path = $descriptionPath;        value = "<descrição HTML do filho>" }
-    @{
-        op    = "add"
-        path  = "/relations/-"
-        value = @{
-            rel        = "System.LinkTypes.Hierarchy-Reverse"
-            url        = "$boardUrl/_apis/wit/workitems/$parentId"
-            attributes = @{ comment = "" }
-        }
+BODY=$(cat <<EOF
+[
+  { "op": "add", "path": "/fields/System.Title", "value": "<título do filho>" },
+  { "op": "add", "path": "${DESCRIPTION_PATH}", "value": "<descrição HTML do filho>" },
+  {
+    "op": "add",
+    "path": "/relations/-",
+    "value": {
+      "rel": "System.LinkTypes.Hierarchy-Reverse",
+      "url": "${AZURE_URL_BOARD}/_apis/wit/workitems/${PARENT_ID}",
+      "attributes": { "comment": "" }
     }
-) | ConvertTo-Json -Depth 5
+  }
+]
+EOF
+)
 
-$response = Invoke-RestMethod -Uri $url -Method Post `
-    -Headers @{ Authorization = "Bearer $token" } `
-    -ContentType "application/json-patch+json" `
-    -Body $body
-
-$response.id
-$response._links.html.href
+curl -s -X POST "$URL" \
+  -H "Authorization: Bearer ${AZURE_USER_API_KEY}" \
+  -H "Content-Type: application/json-patch+json" \
+  -d "$BODY"
 ```
 
 ### Passo 4 — Reportar o resultado
@@ -180,44 +172,45 @@ Execute o script de criação simples (Passo 3 do fluxo de criação simples) pa
 
 Para cada filho, execute o script abaixo. Lembre: Bug usa `Microsoft.VSTS.TCM.ReproSteps`; demais tipos usam `System.Description`.
 
-```powershell
-$token = $env:AZURE_USER_API_KEY
-if (-not $token) { throw "Variável de ambiente AZURE_USER_API_KEY não encontrada." }
+```bash
+AZURE_USER_API_KEY="${AZURE_USER_API_KEY:?Variável AZURE_USER_API_KEY não encontrada}"
+AZURE_URL_BOARD="${AZURE_URL_BOARD:?Variável AZURE_URL_BOARD não encontrada}"
 
-$boardUrl = $env:AZURE_URL_BOARD
-if (-not $boardUrl) { throw "Variável de ambiente AZURE_URL_BOARD não encontrada." }
-
-$childType = [Uri]::EscapeDataString("<tipo do filho, ex: Task>")
-$parentId  = <id do card pai criado no passo anterior>
-$url = "$boardUrl/_apis/wit/workitems/`$$childType`?api-version=7.1"
+CHILD_TYPE="<tipo do filho, ex: Task>"
+CHILD_TYPE_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${CHILD_TYPE}'))")
+PARENT_ID="<id do card pai criado no passo anterior>"
+URL="${AZURE_URL_BOARD}/_apis/wit/workitems/\$${CHILD_TYPE_ENCODED}?api-version=7.1"
 
 # Use /fields/Microsoft.VSTS.TCM.ReproSteps para Bug; /fields/System.Description para os demais
-$descriptionPath = "<caminho do campo conforme tipo>"
+DESCRIPTION_PATH="<caminho do campo conforme tipo>"
 
-$body = @(
-    @{ op = "add"; path = "/fields/System.Title"; value = "<título do filho>" }
-    @{ op = "add"; path = $descriptionPath;        value = "<descrição HTML do filho>" }
-    @{
-        op    = "add"
-        path  = "/relations/-"
-        value = @{
-            rel        = "System.LinkTypes.Hierarchy-Reverse"
-            url        = "$boardUrl/_apis/wit/workitems/$parentId"
-            attributes = @{ comment = "" }
-        }
+BODY=$(cat <<EOF
+[
+  { "op": "add", "path": "/fields/System.Title", "value": "<título do filho>" },
+  { "op": "add", "path": "${DESCRIPTION_PATH}", "value": "<descrição HTML do filho>" },
+  {
+    "op": "add",
+    "path": "/relations/-",
+    "value": {
+      "rel": "System.LinkTypes.Hierarchy-Reverse",
+      "url": "${AZURE_URL_BOARD}/_apis/wit/workitems/${PARENT_ID}",
+      "attributes": { "comment": "" }
     }
-) | ConvertTo-Json -Depth 5
+  }
+]
+EOF
+)
 
-try {
-    $response = Invoke-RestMethod -Uri $url -Method Post `
-        -Headers @{ Authorization = "Bearer $token" } `
-        -ContentType "application/json-patch+json" `
-        -Body $body
-    "Filho criado — ID: $($response.id)"
-    $response._links.html.href
-} catch {
-    "ERRO ao criar filho '<título do filho>': $($_.Exception.Message)"
-}
+RESPONSE=$(curl -s -X POST "$URL" \
+  -H "Authorization: Bearer ${AZURE_USER_API_KEY}" \
+  -H "Content-Type: application/json-patch+json" \
+  -d "$BODY")
+
+if echo "$RESPONSE" | grep -q '"id"'; then
+  echo "Filho criado — $RESPONSE"
+else
+  echo "ERRO ao criar filho '<título do filho>': $RESPONSE"
+fi
 ```
 
 > `System.LinkTypes.Hierarchy-Reverse` significa "este item é filho de parentId".
@@ -256,31 +249,29 @@ Se o usuário cancelar, encerre sem fazer nada.
 
 Bug usa `Microsoft.VSTS.TCM.ReproSteps`; demais tipos usam `System.Description`.
 
-```powershell
-$token = $env:AZURE_USER_API_KEY
-if (-not $token) { throw "Variável de ambiente AZURE_USER_API_KEY não encontrada." }
+```bash
+AZURE_USER_API_KEY="${AZURE_USER_API_KEY:?Variável AZURE_USER_API_KEY não encontrada}"
+AZURE_URL_BOARD="${AZURE_URL_BOARD:?Variável AZURE_URL_BOARD não encontrada}"
 
-$boardUrl = $env:AZURE_URL_BOARD
-if (-not $boardUrl) { throw "Variável de ambiente AZURE_URL_BOARD não encontrada." }
-
-$workItemType = [Uri]::EscapeDataString("<tipo do work item, ex: User Story>")
-$url = "$boardUrl/_apis/wit/workitems/`$$workItemType`?api-version=7.1"
+WORK_ITEM_TYPE="<tipo do work item, ex: User Story>"
+WORK_ITEM_TYPE_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${WORK_ITEM_TYPE}'))")
+URL="${AZURE_URL_BOARD}/_apis/wit/workitems/\$${WORK_ITEM_TYPE_ENCODED}?api-version=7.1"
 
 # Use /fields/Microsoft.VSTS.TCM.ReproSteps para Bug; /fields/System.Description para os demais
-$descriptionPath = "<caminho do campo conforme tipo>"
+DESCRIPTION_PATH="<caminho do campo conforme tipo>"
 
-$body = @(
-    @{ op = "add"; path = "/fields/System.Title"; value = "<título>" }
-    @{ op = "add"; path = $descriptionPath;        value = "<descrição HTML>" }
-) | ConvertTo-Json -Depth 5
+BODY=$(cat <<EOF
+[
+  { "op": "add", "path": "/fields/System.Title", "value": "<título>" },
+  { "op": "add", "path": "${DESCRIPTION_PATH}", "value": "<descrição HTML>" }
+]
+EOF
+)
 
-$response = Invoke-RestMethod -Uri $url -Method Post `
-    -Headers @{ Authorization = "Bearer $token" } `
-    -ContentType "application/json-patch+json" `
-    -Body $body
-
-$response.id
-$response._links.html.href
+curl -s -X POST "$URL" \
+  -H "Authorization: Bearer ${AZURE_USER_API_KEY}" \
+  -H "Content-Type: application/json-patch+json" \
+  -d "$BODY"
 ```
 
 ### Passo 4 — Reportar o resultado
