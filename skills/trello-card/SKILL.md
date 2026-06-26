@@ -126,20 +126,23 @@ Identifique o label cujo `name` corresponda ao tipo inferido (Bug, Story ou Task
 ### Passo 7 — Criar o card via API
 
 ```bash
-BODY=$(cat <<EOF
+PAYLOAD_FILE=$(mktemp --suffix=.json)
+
+cat > "$PAYLOAD_FILE" <<EOF
 {
   "name": "<título do card>",
   "desc": "<descrição em Markdown>",
   "idList": "${LIST_ID}"
 }
 EOF
-)
 
 # Adicionar "idLabels": ["<idLabel>"] ao JSON acima somente se encontrou o label no Passo 6
 
 curl -s -X POST "https://api.trello.com/1/cards?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d "$BODY"
+  -H "Content-Type: application/json; charset=utf-8" \
+  --data-binary "@${PAYLOAD_FILE}"
+
+rm -f "$PAYLOAD_FILE"
 ```
 
 ### Passo 8 — Reportar o resultado

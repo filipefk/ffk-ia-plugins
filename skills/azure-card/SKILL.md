@@ -103,7 +103,9 @@ URL="${AZURE_URL_BOARD}/_apis/wit/workitems/\$${CHILD_TYPE_ENCODED}?api-version=
 # Use /fields/Microsoft.VSTS.TCM.ReproSteps para Bug; /fields/System.Description para os demais
 DESCRIPTION_PATH="<caminho do campo conforme tipo>"
 
-BODY=$(cat <<EOF
+PAYLOAD_FILE=$(mktemp --suffix=.json)
+
+cat > "$PAYLOAD_FILE" <<EOF
 [
   { "op": "add", "path": "/fields/System.Title", "value": "<título do filho>" },
   { "op": "add", "path": "${DESCRIPTION_PATH}", "value": "<descrição HTML do filho>" },
@@ -118,12 +120,13 @@ BODY=$(cat <<EOF
   }
 ]
 EOF
-)
 
 curl -s -X POST "$URL" \
   -H "Authorization: Bearer ${AZURE_USER_API_KEY}" \
-  -H "Content-Type: application/json-patch+json" \
-  -d "$BODY"
+  -H "Content-Type: application/json-patch+json; charset=utf-8" \
+  --data-binary "@${PAYLOAD_FILE}"
+
+rm -f "$PAYLOAD_FILE"
 ```
 
 ### Passo 4 — Reportar o resultado
@@ -184,7 +187,9 @@ URL="${AZURE_URL_BOARD}/_apis/wit/workitems/\$${CHILD_TYPE_ENCODED}?api-version=
 # Use /fields/Microsoft.VSTS.TCM.ReproSteps para Bug; /fields/System.Description para os demais
 DESCRIPTION_PATH="<caminho do campo conforme tipo>"
 
-BODY=$(cat <<EOF
+PAYLOAD_FILE=$(mktemp --suffix=.json)
+
+cat > "$PAYLOAD_FILE" <<EOF
 [
   { "op": "add", "path": "/fields/System.Title", "value": "<título do filho>" },
   { "op": "add", "path": "${DESCRIPTION_PATH}", "value": "<descrição HTML do filho>" },
@@ -199,12 +204,13 @@ BODY=$(cat <<EOF
   }
 ]
 EOF
-)
 
 RESPONSE=$(curl -s -X POST "$URL" \
   -H "Authorization: Bearer ${AZURE_USER_API_KEY}" \
-  -H "Content-Type: application/json-patch+json" \
-  -d "$BODY")
+  -H "Content-Type: application/json-patch+json; charset=utf-8" \
+  --data-binary "@${PAYLOAD_FILE}")
+
+rm -f "$PAYLOAD_FILE"
 
 if echo "$RESPONSE" | grep -q '"id"'; then
   echo "Filho criado — $RESPONSE"
@@ -260,18 +266,21 @@ URL="${AZURE_URL_BOARD}/_apis/wit/workitems/\$${WORK_ITEM_TYPE_ENCODED}?api-vers
 # Use /fields/Microsoft.VSTS.TCM.ReproSteps para Bug; /fields/System.Description para os demais
 DESCRIPTION_PATH="<caminho do campo conforme tipo>"
 
-BODY=$(cat <<EOF
+PAYLOAD_FILE=$(mktemp --suffix=.json)
+
+cat > "$PAYLOAD_FILE" <<EOF
 [
   { "op": "add", "path": "/fields/System.Title", "value": "<título>" },
   { "op": "add", "path": "${DESCRIPTION_PATH}", "value": "<descrição HTML>" }
 ]
 EOF
-)
 
 curl -s -X POST "$URL" \
   -H "Authorization: Bearer ${AZURE_USER_API_KEY}" \
-  -H "Content-Type: application/json-patch+json" \
-  -d "$BODY"
+  -H "Content-Type: application/json-patch+json; charset=utf-8" \
+  --data-binary "@${PAYLOAD_FILE}"
+
+rm -f "$PAYLOAD_FILE"
 ```
 
 ### Passo 4 — Reportar o resultado
