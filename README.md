@@ -54,6 +54,13 @@ Para usar a skill, você precisará da URL base do seu projeto e de um token de 
 | `AZURE_URL_BOARD` | URL base do board no Azure DevOps |
 | `AZURE_USER_API_KEY` | Token de API do usuário |
 
+Configure-as no Claude Code com os comandos abaixo ou adicione manualmente como variáveis de ambiente do computador:
+
+```bash
+claude config set env.AZURE_URL_BOARD "https://dev.azure.com/sua-org/seu-projeto"
+claude config set env.AZURE_USER_API_KEY "seu-token-aqui"
+```
+
 **Exemplo de uso:**
 
 Crie um card de User Story para "Implementar login" com duas tasks filhas: "Criar endpoint de autenticação" e "Desenvolver interface de login". Analise o fonte da pasta local para extrair os detalhes.
@@ -99,6 +106,13 @@ https://trello.com/1/authorize?expiration=never&scope=read,write&response_type=t
 |---|---|
 | `TRELLO_API_KEY` | API Key da conta Trello (obtida em https://trello.com/app-key) |
 | `TRELLO_TOKEN` | Token de acesso OAuth do Trello |
+
+Configure-as no Claude Code com os comandos abaixo ou adicione manualmente como variáveis de ambiente do computador:
+
+```bash
+claude config set env.TRELLO_API_KEY "sua-chave-aqui"
+claude config set env.TRELLO_TOKEN "seu-token-aqui"
+```
 
 **Exemplos de uso:**
 
