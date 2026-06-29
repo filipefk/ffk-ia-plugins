@@ -26,7 +26,6 @@ O Trello usa **Markdown** no campo `desc`. Use os modelos em [card-models.md](ca
 |-------------------|-------------------------------------------------------------|
 | `TRELLO_API_KEY`  | API Key da conta Trello (obtida em https://trello.com/app-key) |
 | `TRELLO_TOKEN`    | Token de acesso OAuth do Trello                             |
-| `TRELLO_LIST_ID`  | ID da lista padrão onde novos cards serão criados           |
 
 ## Confirmação antes de criar
 

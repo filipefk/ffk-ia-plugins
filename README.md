@@ -36,7 +36,18 @@ Veja no link abaixo as orientações para habilitar e desabilitar a atualizaçã
 Cria ou lê work items no Azure DevOps a partir de descrições em linguagem natural. Suporta criação de hierarquias pai/filho (ex.: User Story com Tasks filhas).
 Utiliza scripts PowerShell para interagir com a API do Azure DevOps, então, tem que ter o PowerShell instalado e configurado no ambiente onde o Claude Code está rodando.
 
-Requer as seguintes variáveis de ambiente configuradas:
+#### Obtendo as credenciais do Azure DevOps
+
+Para usar a skill, você precisará da URL base do seu projeto e de um token de acesso pessoal (PAT). Siga os passos abaixo para obtê-los:
+
+1. Abra o board do Azure DevOps no seu navegador.
+2. Copie a URL do board e separe tudo que estiver à esquerda de `/_boards`, sem a barra. Exemplo: na URL `https://empresa.visualstudio.com/Projeto/_boards/board/t/Area/Equipe` pegue só até `https://empresa.visualstudio.com/Projeto`. Salve esta URL para usar como `AZURE_URL_BOARD`.
+3. Abra o menu **"User Settings"** à direita no topo da página e escolha o item **"Personal access tokens"**.
+4. Clique em **"New Token"**.
+5. Preencha os parâmetros do token e marque **"Read, write, & manage"** na permissão de **"Work Items"** e clique em **"Create"**.
+6. Copie e salve o token gerado para usar como `AZURE_USER_API_KEY`.
+
+#### Variáveis de ambiente necessárias
 
 | Variável | Descrição |
 |---|---|
@@ -49,6 +60,60 @@ Crie um card de User Story para "Implementar login" com duas tasks filhas: "Cria
 
 Crie um card de User Story descrevendo o problema abaixo, analise o código da pasta local e crie cards filho de bug ou task conforme a análise do problema e do código. A quantidade de cards filho deve ser baseada na possibilidade de distribuir o trabalho para mais de um programador sendo que cada card filho possa ser testado e entregue separadamente sem gerar conflitos. A User Story deve ter a descrição do problema e os cards filhos devem ser mais técnicos, sugerindo possíveis causas e soluções baseadas no código analisado:
 [descrição livre do problema]
+
+---
+
+### `trello-card`
+
+Cria, lê, atualiza, move, arquiva e lista cards no Trello a partir de linguagem natural. Também gerencia checklists. Board e coluna são resolvidos por nome.
+
+#### Obtendo as credenciais do Trello
+
+Para usar a skill, você precisará de uma chave de API `TRELLO_API_KEY` e um token `TRELLO_TOKEN` do Trello. Siga os passos abaixo para obtê-los:
+
+##### 1. Criar um aplicativo no Trello
+
+1. Faça login no Trello e acesse [https://trello.com/power-ups/admin/](https://trello.com/power-ups/admin/).
+2. Clique no botão **"Novo"** para criar um novo aplicativo.
+3. Preencha os campos solicitados e confirme a criação do aplicativo — o campo "URL de conector Iframe" não é obrigatório.
+4. Clique no botão **"Gerar nova chave de API"** que aparece após criar o aplicativo.
+5. Copie e salve o valor exibido no campo **"Chave de API"**, que é o que você usará como `TRELLO_API_KEY`.
+
+##### 2. Gerar o token de autenticação
+
+Monte a URL abaixo substituindo os conteúdos entre colchetes pelos dados do seu aplicativo:
+
+```
+https://trello.com/1/authorize?expiration=never&scope=read,write&response_type=token&name=[nome+do+app]&key=[Chave de API recém criada]
+```
+
+> **Atenção:** no parâmetro `name`, substitua espaços por `+` (ex.: `Meu App` → `Meu+App`).
+
+1. Com o Trello aberto no browser, acesse a URL montada acima
+2. Leia as permissões solicitadas e clique em **"Permitir"**
+3. Copie e salve o token exibido na página seguinte, que será o que você usará como `TRELLO_TOKEN`
+
+#### Variáveis de ambiente necessárias
+
+| Variável | Descrição |
+|---|---|
+| `TRELLO_API_KEY` | API Key da conta Trello (obtida em https://trello.com/app-key) |
+| `TRELLO_TOKEN` | Token de acesso OAuth do Trello |
+
+**Exemplos de uso:**
+
+```
+/trello-card board:"Meu Projeto" coluna:"To Do" Implementar tela de login
+/trello-card board:"Meu Projeto" coluna:"To Do" due:"2026-07-01" Corrigir bug no checkout
+/trello-card board:"Meu Projeto" checklist:"Tarefas" Nova feature com subtarefas
+/trello-card ler https://trello.com/c/IrWu6L3U/4-nome-do-card
+/trello-card listar board:"Meu Projeto" coluna:"Em andamento"
+/trello-card atualizar <id ou URL> nova descrição
+/trello-card mover <id ou URL> board:"Meu Projeto" coluna:"Concluído"
+/trello-card arquivar <id ou URL>
+/trello-card checklists <id ou URL>
+/trello-card checklist-item <id-checklist> Texto do novo item
+```
 
 ---
 
