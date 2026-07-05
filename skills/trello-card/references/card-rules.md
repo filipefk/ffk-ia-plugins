@@ -20,13 +20,6 @@ Exemplo: `Corrigir login inválido (Criado pelo Claude Code)`.
 
 O Trello usa **Markdown** no campo `desc`. Use os modelos em [card-models.md](card-models.md).
 
-## Variáveis de ambiente necessárias
-
-| Variável          | Conteúdo                                                    |
-|-------------------|-------------------------------------------------------------|
-| `TRELLO_API_KEY`  | API Key da conta Trello (obtida em https://trello.com/app-key) |
-| `TRELLO_TOKEN`    | Token de acesso OAuth do Trello                             |
-
 ## Confirmação antes de criar
 
 Sempre exibir o card montado para confirmação usando `AskUserQuestion` com as opções **Criar card** e **Cancelar** antes de chamar a API. Se cancelar, encerrar sem fazer nada.
