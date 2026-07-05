@@ -340,8 +340,6 @@ https://docs.n8n.io/api/
 
 ### `weather` — Consultar a previsão do tempo
 
-> Plugin: `boca-plugin`
-
 Busca a previsão do tempo atual e dos próximos dias com base em uma localização informada ou, se não informada, estima a localização a partir do IP público (se estiver usando VPN, vai pegar o IP da VPN).
 
 Utiliza a API gratuita [Open-Meteo](https://open-meteo.com/) — sem necessidade de chave de acesso.
