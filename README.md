@@ -26,7 +26,7 @@ Obs.: Se você prefere usar o Claude Code Desktop, não tem problema, mas precis
 
 ## Instalação
 
-Para adicionar o Marketplace de plugins da Growdev, abra o Claude Code CLI e execute o comando abaixo dentro dele:
+Para adicionar o Marketplace de plugins, abra o Claude Code CLI e execute o comando abaixo dentro dele:
 
 ```/plugins marketplace add filipefk/ffk-ia-plugins```
 
@@ -55,8 +55,6 @@ Veja no link abaixo as orientações para habilitar e desabilitar a atualizaçã
 ## Skills disponíveis
 
 ### `azure-card` — Gerenciar work items no Azure DevOps
-
-> Plugin: `growdev-board-plugin`
 
 Cria ou lê um work item no Azure DevOps a partir de uma descrição em linguagem natural. Suporta criação de hierarquias pai/filho, como uma User Story com Tasks filhas.
 
@@ -131,8 +129,6 @@ Para saber se deu certo, solicite ao Claude Code para que ele execute o comando 
 ---
 
 ### `trello-card` — Gerenciar cards no Trello
-
-> Plugin: `growdev-board-plugin`
 
 Cria, lê, atualiza, move e arquiva cards no Trello a partir de linguagem natural. Também gerencia checklists. Board e coluna são resolvidos automaticamente pelo nome.
 
@@ -248,8 +244,6 @@ https://developer.atlassian.com/cloud/trello/rest/api-group-actions/
 ---
 
 ### `n8n` — Consultar e editar workflows do n8n
-
-> Plugin: `growdev-dev-plugin`
 
 Consulta e edita workflows do n8n via API REST — lista os fluxos existentes, exibe os nodes de um fluxo, obtém o JSON completo, atualiza nodes e conexões, duplica, ativa e desativa fluxos. Também consulta e edita data tables (colunas e linhas). Toda operação de escrita faz backup prévio e pede confirmação do usuário antes de chamar a API.
 
